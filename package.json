@@ -1,5 +1,8 @@
 {
     "scripts": {
-      "test": "echo 'Running dummy tests' && exit 0"
+        "test": "echo 'Running dummy tests' && exit 0"
+    },
+    "dependencies": {
+        "express": "^4.21.2"
     }
-  }
+}
