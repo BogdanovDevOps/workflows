@@ -59,6 +59,4 @@ jobs:
         kubectl config set-context minikube --cluster=minikube --user=minikube
         kubectl config use-context minikube
         kubectl apply -f k8s/
-        kubectl apply -f k8s/deployment.yaml
-        kubectl apply -f k8s/service.yaml
-        kubectl rollout status deployment/my-simple-app
+        
