@@ -54,6 +54,11 @@ jobs:
       run: |
         mkdir -p ~/.kube
         echo "$KUBE_CONFIG" | base64 -d > ~/.kube/config
+        # Добавьте проверку сертификатов
+        kubectl config set-cluster minikube --server=$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}')
+        kubectl config set-context minikube --cluster=minikube --user=minikube
+        kubectl config use-context minikube
+        kubectl apply -f k8s/
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/service.yaml
         kubectl rollout status deployment/my-simple-app
