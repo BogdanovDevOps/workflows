@@ -1,33 +1,63 @@
-name: CI/CD Pipeline
+name: CI/CD with Kubernetes
 
 on:
   push:
     branches: [main]
 
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/my-simple-app
+
 jobs:
-  deploy:
+  build-test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    - run: npm install && npm test
 
-    - name: Setup Minikube
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y conntrack
-        minikube start --driver=docker
-        minikube update-context
-        kubectl config view
-        
-    - name: Apply manifests
-      run: |
-        # Получаем реальный IP кластера
-        API_SERVER=$(kubectl config view -o jsonpath='{.clusters[0].cluster.server}')
-        echo "API Server: $API_SERVER"
-        
-        # Применяем манифесты с явным указанием сервера
-        kubectl apply -f k8s/ --server=$API_SERVER --validate=false
-        
-        # Проверяем статус
-        kubectl get pods
-        kubectl get svc
+  docker-push:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ${{ env.DOCKER_IMAGE }}:latest
+
+  ddeploy-k8s:
+  needs: docker-push
+  runs-on: ubuntu-latest
+  steps:
+  - uses: actions/checkout@v4
+  
+  - name: Setup Minikube with certificates
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y conntrack
+      
+      # Стартуем Minikube с встроенными сертификатами
+      minikube start --driver=docker --embed-certs
+      
+      # Обновляем конфигурацию kubectl
+      minikube update-context
+      
+      # Проверяем подключение
+      kubectl cluster-info
+      kubectl get nodes
+
+  - name: Deploy application
+    run: |
+      # Используем minikube kubectl для автоматического управления сертификатами
+      minikube kubectl -- apply -f k8s/
+      
+      # Проверяем статус
+      minikube kubectl -- get pods
+      minikube kubectl -- get svc
+      
+      # Получаем URL сервиса
+      minikube service list
