@@ -29,7 +29,7 @@ jobs:
         push: true
         tags: ${{ env.DOCKER_IMAGE }}:latest
 
-  ddeploy-k8s:
+  deploy-k8s:
   needs: docker-push
   runs-on: ubuntu-latest
   steps:
