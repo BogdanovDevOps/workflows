@@ -34,30 +34,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-  
-    - name: Setup Minikube with certificates
-    run: |
-      sudo apt-get update
-      sudo apt-get install -y conntrack
-      
-      # Стартуем Minikube с встроенными сертификатами
-      minikube start --driver=docker --embed-certs
-      
-      # Обновляем конфигурацию kubectl
-      minikube update-context
-      
-      # Проверяем подключение
-      kubectl cluster-info
-      kubectl get nodes
-
-    - name: proverka
-    run: |
-      # Используем minikube kubectl для автоматического управления сертификатами
-      minikube kubectl -- apply -f k8s/
-      
-      # Проверяем статус
-      minikube kubectl -- get pods
-      minikube kubectl -- get svc
-      
-      # Получаем URL сервиса
-      minikube service list
+    
+    - name: Setup Minikube
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y conntrack
+        minikube start --driver=docker
+        minikube status
+        
+    - name: Deploy application
+      run: |
+        kubectl apply -f k8s/
+        minikube service list
