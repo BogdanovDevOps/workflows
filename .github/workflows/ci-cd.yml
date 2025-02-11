@@ -42,6 +42,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y conntrack
+
+    - name: Start Minikube
+      run: |
+        minikube start --driver=docker
+        minikube update-context
+        kubectl config view
+
+    - name: Deploy manifests
+      run: |
+        kubectl apply -f k8s/
+        kubectl get pods
+        kubectl get svc
     
     - name: Set up kubectl
       uses: azure/setup-kubectl@v3
