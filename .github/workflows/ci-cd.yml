@@ -30,12 +30,12 @@ jobs:
         tags: ${{ env.DOCKER_IMAGE }}:latest
 
   deploy-k8s:
-  needs: docker-push
-  runs-on: ubuntu-latest
-  steps:
-  - uses: actions/checkout@v4
+    needs: docker-push
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
   
-  - name: Setup Minikube with certificates
+    - name: Setup Minikube with certificates
     run: |
       sudo apt-get update
       sudo apt-get install -y conntrack
@@ -50,7 +50,6 @@ jobs:
       kubectl cluster-info
       kubectl get nodes
 
-  - name: Deploy application
     run: |
       # Используем minikube kubectl для автоматического управления сертификатами
       minikube kubectl -- apply -f k8s/
