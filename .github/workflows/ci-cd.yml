@@ -50,7 +50,7 @@ jobs:
       kubectl cluster-info
       kubectl get nodes
 
-    - name: Deploy application
+    - name: proverka
     run: |
       # Используем minikube kubectl для автоматического управления сертификатами
       minikube kubectl -- apply -f k8s/
